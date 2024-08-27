@@ -1,64 +1,117 @@
 # coding=utf-8
-from model import get_model, get_model_C_sub, get_model_C_mul, get_model_max,get_model_lstm
-from sklearn.metrics import roc_auc_score, average_precision_score, f1_score
+from model import get_model, get_model_lstm
+from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, precision_score, recall_score, \
+    accuracy_score
 import numpy as np
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-names = ['HeLa', 'HepG2', 'GM12878', 'IMR90', 'K562', 'hNPC', 'H1']
-name=names[0]
-model=None
+weights = ['mix', 'HeLa', 'HepG2', 'GM12878', 'IMR90', 'K562', 'hNPC', 'H1']
+weight = weights[0]
+model = None
+# model = get_model()
 model = get_model_lstm()
-model.load_weights("./model/%sModel66.h5" % name)
-save_dir = '/pub/data/pengh/DeepTest/pred/HeLa/'
+model.load_weights("./model/k7/mixModel_LSTMbcel56.weights.h5")  #
+print("already load %s_model" % weight)
+save_dir = './pred/mix_lstm_bcel_k7/'
+
+threshold = 0.5
 predictions = {}
 
-y_pred_list = []  # ´æ´¢Ô¤²âÖµµÄÁĞ±í
-y_test_list = []  # ´æ´¢ÕæÊµ±êÇ©µÄÁĞ±í
+# å®šä¹‰å­˜å‚¨æŒ‡æ ‡çš„å­—å…¸
+metrics_dict = {}
 
-#for name in names:
-   
-Data_dir = '/pub/data/pengh/DeepTest/data/%s/' % name
-test = np.load(Data_dir+'%s_test.npz' % name)
-X_en_tes, X_pr_tes, y_tes = test['X_en_tes'], test['X_pr_tes'], test['y_tes']
+# å®šä¹‰å„ä¸ªç»†èƒç³»æ•°æ®çš„è¡ŒèŒƒå›´
+cell_lines = {
+    'HeLa': [(1, 4384), (13304, 21793)], 1w3å·¦å³
+    'H1': [(4385, 4893), (21794, 22842)],1500å·¦å³
+    'hNPC': [(4894, 8315), (22843, 29795)],1wå·¦å³
+    'GM12878': [(8316, 11001), (29796, 35360)],
+    'K562': [(11002, 12093), (35361, 37522)],
+    'HepG2': [(12094, 12607), (37523, 38564)],
+    'IMR90': [(12608, 13303), (38565, 39910)],
 
-print("****************Testing %s cell line specific model on %s cell line****************" % (name, name))
-y_pred = model.predict([X_en_tes, X_pr_tes])
-auc = roc_auc_score(y_tes, y_pred)
-aupr = average_precision_score(y_tes, y_pred)
-f1 = f1_score(y_tes, np.round(y_pred.reshape(-1)))
-print("AUC : ", auc)
-print("AUPR : ", aupr)
-print("f1_score", f1)
-         # ´æ´¢Ô¤²â½á¹û
-        # ´æ´¢Ô¤²â½á¹û
-predictions[name] = {'y_test': y_tes, 'y_pred': y_pred}
+}
 
-        # ½«Ô¤²âÖµºÍÕæÊµ±êÇ©Ìí¼Óµ½ÁĞ±íÖĞ
-y_pred_list.extend(y_pred)
-y_test_list.extend(y_tes)
+for cell_line, ranges in cell_lines.items():
+    y_pred_list = []
+    y_test_list = []
+    y_pred_binary_list = []
+    for idx, data_range in enumerate(ranges):
+        start_row, end_row = data_range
+        X_en_tes = X_pr_tes = y_tes = None
 
-# ½«Ô¤²âÖµºÍÕæÊµ±êÇ©±£´æÎªÎÄ¼ş
-np.save(save_dir + 'predictions_y_pred_lstm.npy', np.array(y_pred_list))
-np.save(save_dir + 'predictions_y_test_lstm.npy', np.array(y_test_list))
-print("save_dir")
 
-# ´òÓ¡Ô¤²â½á¹ûºÍÕæÊµ±êÇ©
-#for name in names:
+        Data_dir = './data/%s/k7/' % weight
+        test = np.load(Data_dir + '%s_test.npz' % weight)
+        X_en_tes, X_pr_tes, y_tes = test['X_en_tes'], test['X_pr_tes'], test['y_tes']
 
-y_test = predictions[name]['y_test']
-y_pred = predictions[name]['y_pred']
-print("Predictions: ", y_pred)
-print("True Labels: ", y_test)
-       
-# ¼ÓÔØÔ¤²â½á¹ûºÍÕæÊµ±êÇ©
-y_pred_array = np.load('/pub/data/pengh/DeepTest/pred/HeLa/predictions_y_pred_lstm.npy')
-y_test_array = np.load('/pub/data/pengh/DeepTest/pred/HeLa/predictions_y_test_lstm.npy')
 
-# ½«Ô¤²â¸ÅÂÊ×ª»»Îª¶ş·ÖÀàÔ¤²â½á¹û£¨0»ò1£©
-y_pred_binary = np.round(y_pred_array)
-np.save(save_dir + 'y_pred_binary.npy', np.array(y_pred_binary))
-# ¼ÆËã×¼È·ÂÊ
-accuracy = np.mean(y_pred_binary == y_test_array)
+        X_en_tes = X_en_tes[start_row - 1:end_row]
+        X_pr_tes = X_pr_tes[start_row - 1:end_row]
+        y_tes = y_tes[start_row - 1:end_row]
 
-print("Accuracy: ", accuracy)
+        if X_en_tes is not None and X_pr_tes is not None and y_tes is not None:
+            print("****************Testing %s cell line specific model on rows %d to %d****************" % (
+            cell_line, start_row, end_row))
+            try:
+                y_pred = model.predict([X_en_tes, X_pr_tes])
+                y_pred_binary = np.where(y_pred >= threshold, 1, 0)
+
+            # è®¡ç®—æŒ‡æ ‡
+                auc = roc_auc_score(y_tes, y_pred)
+                aupr = average_precision_score(y_tes, y_pred)
+                accuracy = accuracy_score(y_tes, y_pred_binary)
+                precision = precision_score(y_tes, y_pred_binary)
+                recall = recall_score(y_tes, y_pred_binary)
+                f1 = f1_score(y_tes, y_pred_binary)
+
+            # æ‰“å°æŒ‡æ ‡æ—¶åŠ ä¸Šç»†èƒç³»åç§°
+                print("AUC for %s: %f" % (cell_line, auc))
+                print("ACC for %s: %f" % (cell_line, accuracy))
+                print("AUPR for %s: %f" % (cell_line, aupr))
+                print("Precision for %s: %f" % (cell_line, precision))
+                print("Recall for %s: %f" % (cell_line, recall))
+                print("F1 Score for %s: %f" % (cell_line, f1))
+
+            # å­˜å‚¨æŒ‡æ ‡åˆ°å­—å…¸ä¸­
+                if cell_line not in metrics_dict:
+                    metrics_dict[cell_line] = {'AUC': [], 'ACC': [], 'AUPR': [], 'Precision': [], 'Recall': [], 'F1': []}
+                    metrics_dict[cell_line]['AUC'].append(auc)
+                    metrics_dict[cell_line]['ACC'].append(accuracy)
+                    metrics_dict[cell_line]['AUPR'].append(aupr)
+                    metrics_dict[cell_line]['Precision'].append(precision)
+                    metrics_dict[cell_line]['Recall'].append(recall)
+                    metrics_dict[cell_line]['F1'].append(f1)
+
+            # å°†é¢„æµ‹å€¼å’ŒçœŸå®æ ‡ç­¾æ·»åŠ åˆ°åˆ—è¡¨ä¸­
+                y_pred_list.extend(y_pred)
+                y_test_list.extend(y_tes)
+                y_pred_binary_list.extend(y_pred_binary)
+            except ValueError as e:
+                print("An error occurred during prediction for %s cell line: %s" % (cell_line, str(e)))
+
+    # å°†é¢„æµ‹å€¼å’ŒçœŸå®æ ‡ç­¾ä¿å­˜ä¸ºæ–‡ä»¶
+    np.save(save_dir + 'predictions_y_pred_%s.npy'% cell_line, np.array(y_pred_list))
+    np.save(save_dir + 'predictions_y_test_%s.npy' % cell_line, np.array(y_test_list))
+    np.save(save_dir + 'predictions_y_pred_binary_%s.npy' % cell_line, np.array(y_pred_binary_list))
+    print("save_dir is : ", save_dir)
+
+    # æ‰“å°æ‰€æœ‰ç»†èƒç³»çš„æŒ‡æ ‡
+for cell_line, metrics in metrics_dict.items():
+    print("Metrics for %s:" % cell_line)
+    print("Average AUC: %f" % np.mean(metrics['AUC']))
+    print("Average ACC: %f" % np.mean(metrics['ACC']))
+    print("Average AUPR: %f" % np.mean(metrics['AUPR']))
+    print("Average Precision: %f" % np.mean(metrics['Precision']))
+    print("Average Recall: %f" % np.mean(metrics['Recall']))
+    print("Average F1 Score: %f" % np.mean(metrics['F1']))
+    # æ‰“å°é¢„æµ‹ç»“æœå’ŒçœŸå®æ ‡ç­¾
+    #y_test = predictions[cell_line]['y_test']
+    #y_pred = predictions[cell_line]['y_pred']
+    #y_pred_binary = predictions[cell_line]['y_pred_binary']
+    #print("Predictions_%s: ", y_pred)
+    #print("True Labels_%s: " , y_test)
+    #print("Predictions_binary_%s: " , y_pred_binary)
+
