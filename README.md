@@ -14,7 +14,7 @@ numpy 1.26.4
 First, in order to avoid conflicts between the project's packages and the user's commonly used environment, we recommend that users create a new conda virtual environment named dl through the following script.\
 `conda create -n dl python=3.10`\
 `conda activate dl`\
-Later, users can install all dependencies of the project by running the script:
+Later, users can install all dependencies of the project by running the script:\
 `pip install poetry`\
 Then download the pyproject.toml provided with this project and go to the folder where this file is stored to activate the environment.\
 `poetry install`
