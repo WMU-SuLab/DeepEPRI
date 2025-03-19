@@ -27,4 +27,6 @@ The data can then be converted into a format that the model can handle:\
 `python sequence_processing.py`
 #### Users who have no need for data augmentation\
 Provide two bed files and then use the bedtools tool to convert them to fasta format:\
-`bedtools getfasta -fi hg19.fa -bed test.bed -name`
+`bedtools getfasta -fi hg19.fa -bed test.bed -name`\
+Then encode the data:\
+`python sequence_processing.py`
