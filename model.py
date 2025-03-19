@@ -19,16 +19,9 @@ import os
 
 MAX_LEN_en = 100
 MAX_LEN_pr = 100
-NB_WORDS = 4097
+NB_WORDS = 16385
 EMBEDDING_DIM = 100
-embedding_matrix = np.load('embedding_matrix.npy')
-embedding_matrix_one_hot = np.array([[0, 0, 0, 0],
-                                     [1, 0, 0, 0],
-                                     [0, 1, 0, 0],
-                                     [0, 0, 1, 0],
-                                     [0, 0, 0, 1]])
-
-
+                          
 class AttLayer(Layer):
     def __init__(self, attention_dim):
         # self.init = initializers.get('normal')
@@ -104,26 +97,20 @@ alpha = 0.5
 gamma = 3
 LOSS = binary_focal_loss(alpha, gamma)
 
-
-
-
-def get_model():
+def DeepEPRI():
     enhancers = Input(shape=(MAX_LEN_en,))
     promoters = Input(shape=(MAX_LEN_pr,))
-    emb_en = Embedding(NB_WORDS, EMBEDDING_DIM, weights=[
-                      embedding_matrix], trainable=True)(enhancers)
-    emb_pr = Embedding(NB_WORDS, EMBEDDING_DIM, weights=[
-                       embedding_matrix], trainable=True)(promoters)
 
-    #emb_en = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(enhancers) #no weights
-    #emb_pr = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(promoters) #no weights
+
+    emb_en = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(enhancers) 
+    emb_pr = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(promoters) 
  
     enhancer_conv_layer = Conv1D(filters=64,
                                  kernel_size=60,
                                  padding="same",
-                                 input_shape=(100, 100) # "same"
+                                 input_shape=(MAX_LEN_en, EMBEDDING_DIM) 
                                 )
-    enhancer_max_pool_layer = MaxPooling1D(pool_size=int(30), strides=int(30))
+    enhancer_max_pool_layer = MaxPooling1D(pool_size=20, strides=20) 
 
     # Build enhancer branch
     enhancer_branch = Sequential()
@@ -134,93 +121,13 @@ def get_model():
     enhancer_branch.add(Dropout(0.5))
     enhancer_out = enhancer_branch(emb_en)
     promoter_conv_layer = Conv1D(filters=64,
-                                 kernel_size=40,
-                                 padding="valid",
-                                 input_shape=(100, 100)
-
-                                )
-    promoter_max_pool_layer = MaxPooling1D(pool_size=int(20), strides=int(20))
-
-   # promoter_length_slim = 2039
-   # n_kernels_slim = 200
-   # filter_length_slim = 20
-    # Build promoter branch
-    promoter_branch = Sequential() #tf.keras.Sequential()
-    promoter_branch.add(promoter_conv_layer)
-    promoter_branch.add(Activation("relu"))
-    promoter_branch.add(promoter_max_pool_layer)
-    promoter_branch.add(BatchNormalization())
-    promoter_branch.add(Dropout(0.5))
-    promoter_out = promoter_branch(emb_pr)
-
-    #enhancer_conv_layer = Conv1D(filters = 32,kernel_size = 40,padding = "valid",activation='relu')(emb_en)
-    #enhancer_max_pool_layer = MaxPooling1D(pool_size = 30, strides = 30)(enhancer_conv_layer)
-    #promoter_conv_layer = Conv1D(filters = 32,kernel_size = 40,padding = "valid",activation='relu')(emb_pr)
-    #promoter_max_pool_layer = MaxPooling1D(pool_size = 20, strides = 20)(promoter_conv_layer)
-    l_gru_1 =  keras.layers.Bidirectional(GRU(50, return_sequences=True))(enhancer_out)
-    l_gru_2 = Bidirectional(GRU(50, return_sequences=True))(promoter_out)
-    l_att_1 = AttLayer(50)(l_gru_1)
-    l_att_2 = AttLayer(50)(l_gru_2)
-    subtract_layer = Subtract()([l_att_1, l_att_2])
-    multiply_layer = Multiply()([l_att_1, l_att_2])
-
-    #merge_layer=Concatenate(axis=1)([l_att_1, l_att_2, subtract_layer, multiply_layer])
-    merge_layer = Concatenate(axis=1)([l_att_1, l_att_2])
-    bn = BatchNormalization()(merge_layer)
-    dt = Dropout(0.5)(bn)
-
-    #l_gru = Bidirectional(LSTM(50))(dt)
-    #l_att = AttLayer(50)(l_gru)
-    #bn2 = BatchNormalization()(l_gru)
-    #dt2 = Dropout(0.5)(bn2)
-    #dt = BatchNormalization()(dt)
-    #dt = Dropout(0.5)(dt)
-    dt = Dense(units=64, kernel_initializer="glorot_uniform")(dt)
-    dt = BatchNormalization()(dt)
-    dt = Activation("relu")(dt)
-    dt = Dropout(0.5)(dt)
-    preds = Dense(1, activation='sigmoid')(dt)
-    model = Model(inputs=[enhancers, promoters], outputs=preds)
-    adam = keras.optimizers.Adam(learning_rate=1e-3) #5e-6
-    model.compile(#loss='binary_crossentropy',
-                  loss=LOSS,
-                  optimizer=adam, metrics=['accuracy',metrics.Precision(), metrics.Recall()])
-    return model
-
-########################################################################################################################
-def get_model_lstm():
-    enhancers = Input(shape=(MAX_LEN_en,))
-    promoters = Input(shape=(MAX_LEN_pr,))
-    #emb_en = Embedding(NB_WORDS, EMBEDDING_DIM, weights=[
-    #                  embedding_matrix], trainable=True)(enhancers)
-    #emb_pr = Embedding(NB_WORDS, EMBEDDING_DIM, weights=[
-    #                   embedding_matrix], trainable=True)(promoters)
-
-    emb_en = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(enhancers) #no weights
-    emb_pr = Embedding(NB_WORDS, EMBEDDING_DIM, trainable=True)(promoters) #no weights
- 
-    enhancer_conv_layer = Conv1D(filters=64,
                                  kernel_size=60,
                                  padding="same",
-                                 input_shape=(100, 100) # "same"
-                                )
-    enhancer_max_pool_layer = MaxPooling1D(pool_size=30, strides=30)
-
-    # Build enhancer branch
-    enhancer_branch = Sequential()
-    enhancer_branch.add(enhancer_conv_layer)
-    enhancer_branch.add(Activation("relu"))
-    enhancer_branch.add(enhancer_max_pool_layer)
-    enhancer_branch.add(BatchNormalization())
-    enhancer_branch.add(Dropout(0.5))
-    enhancer_out = enhancer_branch(emb_en)
-    promoter_conv_layer = Conv1D(filters=64,
-                                 kernel_size=40,
-                                 padding="same",
-                                 input_shape=(100, 100)
+                                 input_shape=(MAX_LEN_pr, EMBEDDING_DIM)
 
                                 )
     promoter_max_pool_layer = MaxPooling1D(pool_size=20, strides=20)
+
 
    # promoter_length_slim = 2039
    # n_kernels_slim = 200
@@ -256,11 +163,10 @@ def get_model_lstm():
     dt = Dropout(0.5)(dt)
     preds = Dense(1, activation='sigmoid')(dt)
     model = Model(inputs=[enhancers, promoters], outputs=preds)
-    adam = keras.optimizers.Adam(learning_rate=1e-3) #5e-6
-    model.compile(#loss='binary_crossentropy',
-                  loss=LOSS,
+    adam = keras.optimizers.Adam(learning_rate=6.25e-5) #The initial learning rate is 1e-3
+    model.compile(loss='binary_crossentropy',
+                  #loss=LOSS,
                   optimizer=adam, metrics=['accuracy',metrics.Precision(), metrics.Recall()])
     return model
-
 
 
