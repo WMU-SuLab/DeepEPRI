@@ -9,11 +9,11 @@ def sentence2word(str_set):
     word_seq=[]
     for sr in str_set:
         tmp=[]
-        for i in range(len(sr)-5):
-            if('N' in sr[i:i+6]):
+        for i in range(len(sr)-6):
+            if('N' in sr[i:i+7]):
                 tmp.append('null')
             else:
-                tmp.append(sr[i:i+6])
+                tmp.append(sr[i:i+7])
         word_seq.append(' '.join(tmp))
     return word_seq
 
@@ -29,13 +29,13 @@ def sentence2num(str_set,tokenizer,MAX_LEN):
 
 def get_tokenizer():
     f= ['a','c','g','t']
-    c = itertools.product(f,f,f,f,f,f)
+    c = itertools.product(f,f,f,f,f,f,f) 
     res=[]
     for i in c:
-        temp=i[0]+i[1]+i[2]+i[3]+i[4]+i[5]
+        temp=i[0]+i[1]+i[2]+i[3]+i[4]+i[5]+i[6]  #
         res.append(temp)
     res=np.array(res)
-    NB_WORDS = 4097
+    NB_WORDS = 16385 #4097 65 257 1025
     tokenizer = Tokenizer(num_words=NB_WORDS)
     tokenizer.fit_on_texts(res)
     acgt_index = tokenizer.word_index
@@ -52,49 +52,34 @@ def get_data(enhancers,promoters):
     return X_en,X_pr
 
 
-# In[ ]:
-
-
-names = ['GM12878', 'H1', 'HeLa', 'IMR90', 'K562', 'HepG2','hNPC']
-name=names[2]
-train_dir='/pub/data/pengh/DeepTest/data/%s/train/'%name
-imbltrain='/pub/data/pengh/DeepTest/data/%s/imbalanced/'%name
-test_dir='/pub/data/pengh/DeepTest/data/%s/test/'%name
-Data_dir='/pub/data/pengh/DeepTest/data/%s/'%name
+names = ['All','GM12878', 'H1', 'HeLa', 'IMR90', 'K562', 'HepG2','hNPC','K562_muta','Hysi87','Hysi76','Hysi65','Hysi54','Hysi43','Hysi32','catsig_allE','catunsig_allE','catunsig','catsig','HepK562','HepHeLa','noverlap','common','IMR90_muta','sc_20',]
+#names = ['P', 'LP','B', 'LB', 'US']
+name=names[0]
+train_dir='./data/%s/aug_20/'%name
+#imbltrain='./data/%s/imbalanced/'%name
+test_dir='./data/%s/aug_20/'%name
+Data_dir='./data/%s/'%name
 print ('Experiment on %s dataset' % name)
 
-print ('Loading seq data...')
+#print ('Loading seq data...')
 enhancers_tra=open(train_dir+'%s_enhancer.fasta'%name,'r').read().splitlines()[1::2]
 promoters_tra=open(train_dir+'%s_promoter.fasta'%name,'r').read().splitlines()[1::2]
 y_tra=np.loadtxt(train_dir+'%s_label.txt'%name)
 
-im_enhancers_tra=open(imbltrain+'%s_enhancer.fasta'%name,'r').read().splitlines()[1::2]
-im_promoters_tra=open(imbltrain+'%s_promoter.fasta'%name,'r').read().splitlines()[1::2]
-y_imtra=np.loadtxt(imbltrain+'%s_label.txt'%name)
 
 enhancers_tes=open(test_dir+'%s_enhancer_test.fasta'%name,'r').read().splitlines()[1::2]
 promoters_tes=open(test_dir+'%s_promoter_test.fasta'%name,'r').read().splitlines()[1::2]
 y_tes=np.loadtxt(test_dir+'%s_label_test.txt'%name)
 
-print('平衡训练集')
-print('pos_samples:'+str(int(sum(y_tra))))
-print('neg_samples:'+str(len(y_tra)-int(sum(y_tra))))
-print('不平衡训练集')
-print('pos_samples:'+str(int(sum(y_imtra))))
-print('neg_samples:'+str(len(y_imtra)-int(sum(y_imtra))))
-print('测试集')
-print('pos_samples:'+str(int(sum(y_tes))))
-print('neg_samples:'+str(len(y_tes)-int(sum(y_tes))))
-
-
-# In[ ]:
-
+#print('训练集')
+#print('pos_samples:'+str(int(sum(y_tra))))
+#print('neg_samples:'+str(len(y_tra)-int(sum(y_tra))))
+#print('测试集')
+#print('pos_samples:'+str(int(sum(y_tes))))
+#print('neg_samples:'+str(len(y_tes)-int(sum(y_tes))))
 
 X_en_tra,X_pr_tra=get_data(enhancers_tra,promoters_tra)
-X_en_imtra,X_pr_imtra=get_data(im_enhancers_tra,im_promoters_tra)
 X_en_tes,X_pr_tes=get_data(enhancers_tes,promoters_tes)
 
 np.savez(Data_dir+'%s_train.npz'%name,X_en_tra=X_en_tra,X_pr_tra=X_pr_tra,y_tra=y_tra)
-np.savez(Data_dir+'im_%s_train.npz'%name,X_en_tra=X_en_imtra,X_pr_tra=X_pr_imtra,y_tra=y_imtra)
 np.savez(Data_dir+'%s_test.npz'%name,X_en_tes=X_en_tes,X_pr_tes=X_pr_tes,y_tes=y_tes)
-
