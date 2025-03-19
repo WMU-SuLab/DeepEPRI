@@ -1,5 +1,5 @@
 # coding=utf-8
-from model import get_model, get_model_lstm
+from model import DeepEPRI
 from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, precision_score, recall_score, \
     accuracy_score
 import numpy as np
