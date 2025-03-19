@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 import tensorflow as tf
 import model
-from model import get_model, set_seed, get_model_lstm
+from model import DeepEPRI, set_seed
 import numpy as np
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import ReduceLROnPlateau
@@ -44,7 +44,7 @@ class roc_callback(Callback):
         acc_val = logs.get('accuracy')  # 获取准确率
         precision_val = logs.get('precision')  # 获取精确率
         recall_val = logs.get('recall')  # 获取召回率
-        self.model.save_weights("./model/%sModel_lstm%d.h5" % (self.name, epoch), overwrite=True)
+        self.model.save_weights("./model/%s_Weights%d.h5" % (self.name, epoch), overwrite=True)
 
         print('\r auc_val: %s ' % str(round(auc_val, 4)), end=100 * ' ' + '\n')
         print('\r aupr_val: %s ' % str(round(aupr_val, 4)), end=100 * ' ' + '\n')
@@ -75,26 +75,25 @@ class roc_callback(Callback):
 t1 = datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
 
 model.set_seed(2024)
-names = ['HeLa', 'HepG2', 'GM12878', 'IMR90', 'K562', 'hNPC', 'H1']
-name = names[0]
+names = ['All'，'HeLa', 'HepG2', 'GM12878', 'IMR90', 'K562', 'hNPC', 'H1']
+name = names[1]
 # The data used here is the sequence processed by data_processing.py.
-Data_dir = '/pub/data/pengh/DeepTest/data/%s/' % name
+Data_dir = './data/%s/' % name
 train = np.load(Data_dir + '%s_train.npz' % name)
 # test=np.load(Data_dir+'%s_test.npz'%name)
 X_en_tra, X_pr_tra, y_tra = train['X_en_tra'], train['X_pr_tra'], train['y_tra']
 
 X_en_tra, X_en_val, X_pr_tra, X_pr_val, y_tra, y_val = train_test_split(
-    X_en_tra, X_pr_tra, y_tra, test_size=0.05, stratify=y_tra, random_state=250)
+    X_en_tra, X_pr_tra, y_tra, test_size=0.1, stratify=y_tra, random_state=250)
 
-log_dir = "./logs/HeLa/20240621/%s" % name  # 日志目录的路径
+log_dir = "./logs/HeLa/20250319/%s" % name  # 日志目录的路径
 tensorboard = TensorBoard(log_dir=log_dir)
-reduce_lr = ReduceLROnPlateau(factor=0.5, patience=15)
+reduce_lr = ReduceLROnPlateau(factor=0.5, patience=10)
 early_stopping_monitor = EarlyStopping(monitor='val_loss', patience=50)
-csv_file_path = './metrics_focalloss_w_s20_100_lstm1.csv'
+csv_file_path = './metrics_DeepEPRI.csv'
 
 model = None
-#model = get_model()
-model = get_model_lstm()
+model = get_DeepEPRI()
 # 修改权重的句柄名称
 for i in range(len(model.weights)):
     model.weights[i]._handle_name = model.weights[i].name + "_" + str(i)
@@ -105,7 +104,7 @@ print('Traing %s cell line specific model ...' % name)
 with open(csv_file_path, mode='w', newline='') as csv_file:
     back = roc_callback(val_data=[X_en_val, X_pr_val, y_val], name=name,csv_file=csv_file)
     back.log_dir = log_dir
-    history = model.fit([X_en_tra, X_pr_tra], y_tra, validation_data=([X_en_val, X_pr_val], y_val), epochs=500,
+    history = model.fit([X_en_tra, X_pr_tra], y_tra, validation_data=([X_en_val, X_pr_val], y_val), epochs=200,
                         batch_size=32, callbacks=[back, tensorboard, early_stopping_monitor,reduce_lr])
 # Close the CSV file
     csv_file.close()
