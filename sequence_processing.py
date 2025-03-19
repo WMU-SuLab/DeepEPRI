@@ -3,8 +3,6 @@ import numpy as np
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 
-
-
 def sentence2word(str_set):
     word_seq=[]
     for sr in str_set:
@@ -51,7 +49,6 @@ def get_data(enhancers,promoters):
 
     return X_en,X_pr
 
-
 names = ['All','GM12878', 'H1', 'HeLa', 'IMR90', 'K562', 'HepG2','hNPC','K562_muta','Hysi87','Hysi76','Hysi65','Hysi54','Hysi43','Hysi32','catsig_allE','catunsig_allE','catunsig','catsig','HepK562','HepHeLa','noverlap','common','IMR90_muta','sc_20',]
 #names = ['P', 'LP','B', 'LB', 'US']
 name=names[0]
@@ -65,7 +62,6 @@ print ('Experiment on %s dataset' % name)
 enhancers_tra=open(train_dir+'%s_enhancer.fasta'%name,'r').read().splitlines()[1::2]
 promoters_tra=open(train_dir+'%s_promoter.fasta'%name,'r').read().splitlines()[1::2]
 y_tra=np.loadtxt(train_dir+'%s_label.txt'%name)
-
 
 enhancers_tes=open(test_dir+'%s_enhancer_test.fasta'%name,'r').read().splitlines()[1::2]
 promoters_tes=open(test_dir+'%s_promoter_test.fasta'%name,'r').read().splitlines()[1::2]
