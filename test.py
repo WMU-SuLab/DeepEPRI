@@ -36,10 +36,10 @@ for name in names:
     print("y_tes.shape",y_tes.shape)
     auc = roc_auc_score(y_tes, y_pred)
     aupr = average_precision_score(y_tes, y_pred)
-    accuracy = accuracy_score(y_test, y_pred_binary)
-    precision = precision_score(y_test, y_pred_binary)
-    recall = recall_score(y_test, y_pred_binary)
-    f1 = f1_score(y_test, y_pred_binary)
+    accuracy = accuracy_score(y_tes, y_pred_binary)
+    precision = precision_score(y_tes, y_pred_binary)
+    recall = recall_score(y_tes, y_pred_binary)
+    f1 = f1_score(y_tes, y_pred_binary)
     print("AUC : ", auc)
     print("ACC : ", accuracy)
     print("AUPR : ", aupr)
@@ -48,9 +48,9 @@ for name in names:
     print("F1 Score : ", f1)
          
   
-    np.save(save_dir + 'y_pred_tesindata_%s.npy' % name, y_pred)
-    np.save(save_dir + 'y_tes_%s.npy' % name, y_tes)
-    np.save(save_dir + 'y_pred_binary_tesindata_%s.npy' % name, y_pred_binary)
+    np.save(save_dir + 'y_pred_%s.npy' % name, y_pred)
+    np.save(save_dir + 'y_test_%s.npy' % name, y_tes)
+    np.save(save_dir + 'y_pred_binary_%s.npy' % name, y_pred_binary)
     print("save_dir is : ",save_dir)
 
     # 打印预测结果和真实标签
