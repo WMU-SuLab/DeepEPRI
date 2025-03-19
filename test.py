@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, pr
 import numpy as np
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 weights = ['All', 'HeLa', 'HepG2', 'GM12878', 'IMR90', 'K562', 'hNPC', 'H1']
 weight = weights[0]
