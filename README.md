@@ -43,5 +43,5 @@ Figure A: Network structure of the model. Figure B: Relevant applications of thi
 `python train.py`
 * Just need to test:\
 `python test.py`
-### Step 3. Use the model to calculate variance scores
+### Step 4. Use the model to calculate variance scores
 * The data before and after the mutation were tested separately to obtain __P0__ and __P1__, and the mutation score for each locus was obtained by using `P1-P0`.
