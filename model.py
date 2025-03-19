@@ -128,11 +128,6 @@ def DeepEPRI():
                                 )
     promoter_max_pool_layer = MaxPooling1D(pool_size=20, strides=20)
 
-
-   # promoter_length_slim = 2039
-   # n_kernels_slim = 200
-   # filter_length_slim = 20
-    # Build promoter branch
     promoter_branch = Sequential() #tf.keras.Sequential()
     promoter_branch.add(promoter_conv_layer)
     promoter_branch.add(Activation("relu"))
@@ -141,10 +136,6 @@ def DeepEPRI():
     promoter_branch.add(Dropout(0.5))
     promoter_out = promoter_branch(emb_pr)
 
-    #enhancer_conv_layer = Conv1D(filters = 32,kernel_size = 40,padding = "valid",activation='relu')(emb_en)
-    #enhancer_max_pool_layer = MaxPooling1D(pool_size = 30, strides = 30)(enhancer_conv_layer)
-    #promoter_conv_layer = Conv1D(filters = 32,kernel_size = 40,padding = "valid",activation='relu')(emb_pr)
-    #promoter_max_pool_layer = MaxPooling1D(pool_size = 20, strides = 20)(promoter_conv_layer)
     l_lstm_1 = Bidirectional(LSTM(50, return_sequences=True))(enhancer_out)
     l_lstm_2 = Bidirectional(LSTM(50, return_sequences=True))(promoter_out)
     l_att_1 = AttLayer(50)(l_lstm_1)
@@ -155,7 +146,6 @@ def DeepEPRI():
     merge_layer = Concatenate(axis=1)([l_att_1, l_att_2])
     bn = BatchNormalization()(merge_layer)
     dt = Dropout(0.5)(bn)
-
 
     dt = Dense(units=64, kernel_initializer="glorot_uniform")(dt)
     dt = BatchNormalization()(dt)
