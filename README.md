@@ -17,7 +17,7 @@ First, in order to avoid conflicts between the project's packages and the user's
 Later, users can install all dependencies of the project by running the script:\
 `pip install poetry`\
 Then download the pyproject.toml provided with this project and go to the folder where this file is stored to activate the environment:\
-`poetry install`
+`poetry install`\
 Download the `bedtools` for subsequent data processing.
 ### Step 1. Prepare dataset
 #### Users who have a need for data augmentation\
