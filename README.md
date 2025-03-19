@@ -8,7 +8,8 @@ DeepEPRI: A  deep learning framework for identifying eRNA-auRNA interactions
 * The file __"model.py"__ is the code of the network architecture.
 * The file __"train.py"__ is the code for training the model.
 * The file __"test.py"__ is the code for evaluating the performance of model.
-* The file __"test.py"__ is the code for evaluating the performance of model.
+* The file __"sequence_processing.py"__ is the code for pre-processing DNA sequences.
+* The file __"pyproject.toml"__ is for building the environment.
 ## Dependency
 * Python 3.10.14\
 * tensorflow 2.15.1\
