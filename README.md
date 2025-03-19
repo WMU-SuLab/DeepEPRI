@@ -30,3 +30,8 @@ Provide two bed files and then use the bedtools tool to convert them to fasta fo
 `bedtools getfasta -fi hg19.fa -bed test.bed -name`\
 Then encode the data:\
 `python sequence_processing.py`
+### Step 3. Run DeepEPRI
+If you need to train the model from scratch:\
+`python train.py`\
+Just need to test:\
+`python test.py`
