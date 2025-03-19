@@ -1,2 +1,19 @@
 # DeepEPRI
+DeepEPRI: A  deep learning framework for identifying eRNA-auRNA interactions
+## Framework
 ![image](https://github.com/WMU-SuLab/DeepEPRI/blob/main/images/workflow.jpg)
+## Overview
+## Dependency
+Python 3.10.14
+tensorflow 2.15.1
+scikit-learn 1.5.1
+scipy 1.14.0
+numpy 1.26.4
+## Usage
+### Step 0. Setup environment
+First, in order to avoid conflicts between the project's packages and the user's commonly used environment, we recommend that users create a new conda virtual environment named dl through the following script.
+conda create -n dl python=3.10
+conda activate dl
+Later, users can install all dependencies of the project by running the script:
+### Step 1. Prepare dataset
+python sequence_processing.py
