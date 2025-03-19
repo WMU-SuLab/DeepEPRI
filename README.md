@@ -3,6 +3,7 @@ DeepEPRI: A  deep learning framework for identifying eRNA-auRNA interactions
 ## Framework
 ![image](https://github.com/WMU-SuLab/DeepEPRI/blob/main/images/workflow.jpg)
 ## Overview
+The folder "data" contains the initial data (eRNA-auRNA pairing data) for seven cell lines in csv format.There is also an R script for data enhancement (`Data_Augmentation.R`,A tool of data augmentation provided by Mao et al. (2017). The details of the tool can be seen in https://github.com/wgmao/EPIANN.)\
 ## Dependency
 Python 3.10.14\
 tensorflow 2.15.1\
