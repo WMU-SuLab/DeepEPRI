@@ -4,11 +4,11 @@ library(BSgenome.Hsapiens.UCSC.hg19.masked)
 #Delete the files before running the script
 #GM12878, HeLa, HUVEC, IMR90, K562, NHEK
 celline <- "HeLa"
-folder <- "aug_50"
+folder <- "aug_20"
 shift_distance <- 20
 random_seed <- 1
-enhancer_target_length <- 70
-promoter_target_length <- 80
+enhancer_target_length <- 100
+promoter_target_length <- 100
 positive_scalar <- 2
 test_percent <- 0.1
 pair_file_name <- paste(celline,"/",celline,".csv",sep="")
